@@ -123,5 +123,5 @@ def transform(tree, runtime_vals, loop_index_prefix=None):
     the loops, no memory allocations will be performed. In other words, all variables
     appeared in the input code should already be defined.
     '''
-    shape_info = shape_analysis.visit(tree, runtime_vals)
+    shape_info = shape_analysis.analyze(tree, runtime_vals)
     return PointwiseExprToLoop(shape_info, loop_index_prefix).visit(tree)

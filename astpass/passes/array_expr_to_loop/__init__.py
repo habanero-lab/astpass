@@ -1,1 +1,1 @@
-from .convert_point_wise import transform
+from .convert_reduction_and_pointwise import transform
