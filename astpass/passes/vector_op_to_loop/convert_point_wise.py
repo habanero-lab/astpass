@@ -10,6 +10,8 @@ class CollectNonzeroShapes(ast.NodeVisitor):
         self.nonzero_shapes = []
 
     def get_node_shape(self, node):
+        if node not in self.shape_info:
+            raise KeyError(f"Shape info not found for node {type(node)}: {ast.unparse(node)}")
         return self.shape_info[node]
 
     def visit_Subscript(self, node):
