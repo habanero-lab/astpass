@@ -20,6 +20,10 @@ class CollectNonzeroShapes(ast.NodeVisitor):
         if len(shape) > 0:
             self.nonzero_shapes.append(shape)
 
+    def visit_Call(self, node):
+        for arg in node.args:
+            self.visit(arg)
+
     def visit_Name(self, node):
         shape = self.get_node_shape(node)
         assert shape is not None
@@ -31,8 +35,18 @@ class Scalarize(ast.NodeTransformer):
         self.shape_info = shape_info
         self.idx = idx
 
+    def get_node_shape(self, node):
+        if node not in self.shape_info:
+            raise KeyError(f"Shape info not found for node {type(node)}: {ast.unparse(node)}")
+        return self.shape_info[node]
+    
+    def visit_Call(self, node):
+        for arg in node.args:
+            self.visit(arg)
+        return node
+
     def visit_Name(self, node):
-        shape = self.shape_info[node]
+        shape = self.get_node_shape(node)
         if len(shape) > 0:
             assert len(shape) == 1
             return ast.Subscript(
