@@ -4,7 +4,7 @@ from ...passes.ast_utils import is_call
 from .convert_point_wise import PointwiseExprToLoop, Scalarize
 
 class ReductionAndPWExprToLoop(PointwiseExprToLoop):
-    def gen_loop(self, node: ast.Assign, low, up):
+    def gen_loop(self, node: ast.Assign, low: int|str, up: int|str):
         if is_call(node.value):
             print(ast.unparse(node))
         return super().gen_loop(node, low, up)

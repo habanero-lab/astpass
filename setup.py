@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="astpass",              # Name of the package
+    name="astpass",                     # Name of the package
     version="0.1.0",                    # Version
     author="Tong Zhou",                 # Your name
     author_email="zt9465@gmail.com", # Your email
@@ -15,7 +15,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.9',            # Minimum Python version requirement
+    python_requires='>=3.10',            # Minimum Python version requirement
     install_requires=['ast_comments'],
     extras_require={
         "test": ["numpy", "pytest"],
