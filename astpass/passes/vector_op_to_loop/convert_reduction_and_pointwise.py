@@ -1,9 +1,12 @@
+import ast
 from .. import shape_analysis
+from ...passes.ast_utils import is_call
 from .convert_point_wise import PointwiseExprToLoop, Scalarize
 
 class ReductionAndPWExprToLoop(PointwiseExprToLoop):
-    def gen_loop(self, node, low, up):
-        # Todo
+    def gen_loop(self, node: ast.Assign, low, up):
+        if is_call(node.value):
+            print(ast.unparse(node))
         return super().gen_loop(node, low, up)
     
 def transform(tree, runtime_vals, loop_index_prefix=None):
