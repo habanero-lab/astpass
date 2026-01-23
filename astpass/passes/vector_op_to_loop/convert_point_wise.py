@@ -1,8 +1,6 @@
 import ast
+from ...passes.ast_utils import str_to_ast_expr
 from ...passes import shape_analysis
-
-def str_to_ast_expr(expr_str):
-    return ast.parse(expr_str).body[0].value
 
 class CollectNonzeroShapes(ast.NodeVisitor):
     def __init__(self, shape_info):
