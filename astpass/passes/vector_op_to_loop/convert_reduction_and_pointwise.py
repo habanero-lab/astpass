@@ -1,13 +1,86 @@
 import ast
 from .. import shape_analysis
-from ...passes.ast_utils import is_call
+from ...passes.ast_utils import is_call, str_to_ast_expr
 from .convert_point_wise import PointwiseExprToLoop, Scalarize
 
 class ReductionAndPWExprToLoop(PointwiseExprToLoop):
+    def get_reduce_op(self, call_node: ast.Call):
+        func = ast.unparse(call_node.func)
+        table = {
+            'sum': 'sum',
+            'min': 'min',
+            'max': 'max',
+            'np.sum': 'sum',
+            'np.min': 'min',
+            'np.max': 'max',
+            'torch.sum': 'sum',
+            'torch.min': 'min',
+            'torch.max': 'max',
+        }
+        return table[func]
+    
+    def gen_initialization(self, reduce_op, var):
+        value = None
+        if reduce_op == 'sum':
+            value = ast.Constant(0)
+        elif reduce_op == 'max':
+            value = str_to_ast_expr("float('-inf')")
+        elif reduce_op == 'min':
+            value = str_to_ast_expr("float('inf')")
+        else:
+            raise NotImplementedError
+        
+        return ast.Assign(
+            targets=[ast.Name(id=var, ctx=ast.Store())],
+            value=value,
+            lineno=None
+        )
+    
+    def rewrite_reduction_assign(self, reduce_op, var, orig_value):
+        value = None
+        if reduce_op == 'sum':
+            value=ast.BinOp(
+                op=ast.Add(),
+                left=ast.Name(id=var, ctx=ast.Load()),
+                right=orig_value.args[0]
+            )
+        elif reduce_op == 'max':
+            value=ast.Call(
+                func=ast.Name(id='max', ctx=ast.Load()),
+                args=[
+                    ast.Name(id=var, ctx=ast.Load()),
+                    orig_value.args[0]
+                ],
+                keywords=[]
+            )
+        elif reduce_op == 'min':
+            value=ast.Call(
+                func=ast.Name(id='min', ctx=ast.Load()),
+                args=[
+                    ast.Name(id=var, ctx=ast.Load()),
+                    orig_value.args[0]
+                ],
+                keywords=[]
+            )
+        else:
+            raise NotImplementedError
+        
+        return ast.Assign(
+            targets=[ast.Name(id=var, ctx=ast.Store())],
+            value=value,
+            lineno=None
+        )
+
     def gen_loop(self, node: ast.Assign, low: int|str, up: int|str):
-        if is_call(node.value):
-            print(ast.unparse(node))
-        return super().gen_loop(node, low, up)
+        loop = super().gen_loop(node, low, up)
+        if is_call(node.value, ["np.sum", "np.min", "np.max"]):
+            reduce_op = self.get_reduce_op(node.value)
+            var = node.targets[0].id            
+            init_stmt = self.gen_initialization(reduce_op, var)
+            loop.body = [self.rewrite_reduction_assign(reduce_op, var, node.value)]
+            return init_stmt, loop
+        else:
+            return loop
     
 def transform(tree, runtime_vals, loop_index_prefix=None):
     """

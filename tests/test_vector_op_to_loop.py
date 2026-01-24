@@ -92,9 +92,10 @@ def test_np_sum1():
     }
     tree = vector_op_to_loop.transform(tree, rt_vals)
 
-    print(ast.dump(tree))
+    print(ast.unparse(tree))
 
     expected = """
+    c = 0
     for __i0 in range(0, 10):
         c = c + a[__i0]
     """

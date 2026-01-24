@@ -39,8 +39,7 @@ class Scalarize(ast.NodeTransformer):
         return self.shape_info[node]
     
     def visit_Call(self, node):
-        for arg in node.args:
-            self.visit(arg)
+        node.args = [self.visit(arg) for arg in node.args]
         return node
 
     def visit_Name(self, node):
