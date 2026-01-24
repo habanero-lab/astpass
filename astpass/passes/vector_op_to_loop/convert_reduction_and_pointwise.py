@@ -44,18 +44,9 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
                 left=ast.Name(id=var, ctx=ast.Load()),
                 right=orig_value.args[0]
             )
-        elif reduce_op == 'max':
+        elif reduce_op == 'max' or reduce_op == 'min':
             value=ast.Call(
-                func=ast.Name(id='max', ctx=ast.Load()),
-                args=[
-                    ast.Name(id=var, ctx=ast.Load()),
-                    orig_value.args[0]
-                ],
-                keywords=[]
-            )
-        elif reduce_op == 'min':
-            value=ast.Call(
-                func=ast.Name(id='min', ctx=ast.Load()),
+                func=ast.Name(id=reduce_op, ctx=ast.Load()),
                 args=[
                     ast.Name(id=var, ctx=ast.Load()),
                     orig_value.args[0]
