@@ -35,4 +35,5 @@ for node, shape in shape_info.items():
 ## Passes
 
 * `shape_analysis` – returns a dictionary where each node is mapped to a shape.
-* More passes are to be added ...
+* `vector_op_to_loop` - transforms 1D array expressions into explicit loops.
+* To add more ...
