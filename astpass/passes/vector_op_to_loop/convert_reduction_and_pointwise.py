@@ -61,10 +61,18 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
             value=value,
             lineno=None
         )
+    
+    def is_reduction_call(self, node):
+        return is_call(node, [
+            "np.sum", "np.min", "np.max",
+            "torch.sum", "torch.min", "torch.max",
+            "sum", "min", "max"
+            ]
+        )
 
     def gen_loop(self, node: ast.Assign, low: int|str, up: int|str):
         loop = super().gen_loop(node, low, up)
-        if is_call(node.value, ["np.sum", "np.min", "np.max"]):
+        if self.is_reduction_call(node.value):
             reduce_op = self.get_reduce_op(node.value)
             var = node.targets[0].id            
             init_stmt = self.gen_initialization(reduce_op, var)
