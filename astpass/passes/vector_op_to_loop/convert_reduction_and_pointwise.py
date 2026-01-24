@@ -74,7 +74,9 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
         loop = super().gen_loop(node, low, up)
         if self.is_reduction_call(node.value):
             reduce_op = self.get_reduce_op(node.value)
-            var = node.targets[0].id            
+            if not isinstance(node.targets[0], ast.Name):
+                raise RuntimeError(f"Only 1D array reduction is supported, but got target: {node.targets[0]}")
+            var = node.targets[0].id
             init_stmt = self.gen_initialization(reduce_op, var)
             loop.body = [self.rewrite_reduction_assign(reduce_op, var, node.value)]
             return init_stmt, loop
