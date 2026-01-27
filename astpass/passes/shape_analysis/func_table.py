@@ -103,6 +103,15 @@ def numpy_rint(a):
 def numpy_log(a):
     return uop_generic(a)
 
+def numpy_exp(a):
+    return uop_generic(a)
+
+def numpy_sqrt(a):
+    return uop_generic(a)
+
+def erf(a):
+    return uop_generic(a)
+
 def numpy_pow(a, b):
     assert len(b) == 0 or len(b) == 1 or len(b) == len(a)
     return a
