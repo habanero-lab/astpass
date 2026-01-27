@@ -19,4 +19,4 @@ class GetUsedNames(ast.NodeVisitor):
 def analyze(tree, no_funcname):
     visitor = GetUsedNames(no_funcname)
     visitor.visit(tree)
-    return sorted(visitor.used)
+    return visitor.used
