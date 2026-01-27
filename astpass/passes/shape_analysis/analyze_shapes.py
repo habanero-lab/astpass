@@ -1,6 +1,7 @@
 import ast
 import inspect
 from . import func_table
+from ..ast_utils import is_call
 
 class AnalyzeExprShapes(ast.NodeVisitor):
     def __init__(self, rt_vals):
@@ -138,6 +139,13 @@ class AnalyzeAssignShapes(AnalyzeExprShapes):
         # Check if the shape of the target and the value are the same
         if self.node_shapes[target] != self.node_shapes[node.value]:
             raise RuntimeError(f"Shapes mismatch for assignment: {ast.unparse(node)}")
+        
+    def visit_For(self, node):
+        # Only for-range calls are supported
+        assert is_call(node.iter, ["range"])
+        self.var_shapes[node.target.id] = ()
+        self.generic_visit(node)
+
 
 def analyze(tree, rt_vals):
     visitor = AnalyzeAssignShapes(rt_vals)
