@@ -122,6 +122,12 @@ def numpy_multiply(a, b):
 def numpy_divide(a, b):
     return binop_generic(a, b)
 
+def numpy_minimum(a, b):
+    return binop_generic(a, b)
+
+def numpy_maximum(a, b):
+    return binop_generic(a, b)
+
 def numpy_reduce_generic(a, axis=None):
     if axis != None:
         assert isinstance(axis, int)
