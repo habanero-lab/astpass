@@ -72,6 +72,8 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
 
     def gen_loop(self, node: ast.Assign, low: int|str, up: int|str):
         loop = super().gen_loop(node, low, up)
+        # A convenient attribute for APPy
+        loop._simd_okay = True
         if self.is_reduction_call(node.value):
             reduce_op = self.get_reduce_op(node.value)
             if not isinstance(node.targets[0], ast.Name):
@@ -79,6 +81,8 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
             var = node.targets[0].id
             init_stmt = self.gen_initialization(reduce_op, var)
             loop.body = [self.rewrite_reduction_assign(reduce_op, var, node.value)]
+            # A convenient attribute for APPy
+            loop._reduction = (reduce_op, var)
             return init_stmt, loop
         else:
             return loop
