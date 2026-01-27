@@ -11,6 +11,9 @@ def binop_generic(left, right):
     else:
         raise NotImplementedError("Shape broadcasting is not implemented")
     
+def compare_generic(left, right):
+    return binop_generic(left, right)
+    
 def matmul_generic(left, right):
     if not (len(left) > 0 and len(right) > 0):
         raise RuntimeError("Matmul cannot happen on scalar operands")
