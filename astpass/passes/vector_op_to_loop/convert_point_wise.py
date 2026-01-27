@@ -96,6 +96,8 @@ class PointwiseExprToLoop(ast.NodeTransformer):
             low, up = 0, bound
         elif isinstance(bound, str):
             low, up = bound.split(":")
+            assert up != ''
+            low = 0 if low == '' else low
         return low, up
 
     def visit_Assign(self, node):        
