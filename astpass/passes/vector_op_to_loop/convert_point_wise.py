@@ -55,20 +55,24 @@ class Scalarize(ast.NodeTransformer):
             return node
         
     def visit_Subscript(self, node):
+        shape = self.get_node_shape(node)
+        if len(shape) == 0:
+            return node
+        
         indices = node.slice.elts if isinstance(node.slice, ast.Tuple) else (node.slice,)
         num_slices = sum([isinstance(idx, ast.Slice) for idx in indices])
         assert num_slices in [0, 1], f"A subscript should have 0 or 1 sliced indices, but got {num_slices}"
 
         new_scalar_index = ast.Name(id=self.idx, ctx=ast.Load())
         if num_slices == 0:
-            new_indices = indices + new_scalar_index
+            new_indices = indices + (new_scalar_index,)
         elif num_slices == 1:
             new_indices = [new_scalar_index if isinstance(idx, ast.Slice) else idx for idx in indices]
 
         return ast.Subscript(
                 value=node.value,
                 slice=ast.Tuple(elts=new_indices, ctx=ast.Load()) if len(new_indices) > 1 else new_indices[0],
-                ctx=ast.Load()
+                ctx=node.ctx
             )
 
 
