@@ -61,6 +61,11 @@ class AnalyzeExprShapes(ast.NodeVisitor):
         f = getattr(func_table, 'compare_generic')        
         self.node_shapes[node] = f(self.node_shapes[node.left], self.node_shapes[node.comparators[0]])
 
+    def visit_IfExp(self, node: ast.IfExp):
+        self.generic_visit(node)
+        f = getattr(func_table, 'ifexp_generic')
+        self.node_shapes[node] = f(self.node_shapes[node.test], self.node_shapes[node.body], self.node_shapes[node.orelse])
+
     def dispatch_call(self, f_name, args):
         if f_name in ['numpy_sum', 'numpy_min', 'numpy_max', 'numpy_argmin', 'numpy_argmax']:
             assert len(args) in [1, 2], f"numpy_<reduce> should either one or two arguments, but got {len(args)}"

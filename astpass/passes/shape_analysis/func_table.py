@@ -13,6 +13,10 @@ def binop_generic(left, right):
     
 def compare_generic(left, right):
     return binop_generic(left, right)
+
+def ifexp_generic(test, body, orelse):
+    assert test == () and body == orelse
+    return body
     
 def matmul_generic(left, right):
     if not (len(left) > 0 and len(right) > 0):
