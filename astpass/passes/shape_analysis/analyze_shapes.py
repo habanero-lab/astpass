@@ -46,14 +46,14 @@ class AnalyzeExprShapes(ast.NodeVisitor):
     
     def visit_BinOp(self, node):
         self.generic_visit(node)
-        if isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv)):
+        if isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.BitAnd, ast.BitOr, ast.BitXor)):
             f = getattr(func_table, 'binop_generic')
             self.node_shapes[node] = f(self.node_shapes[node.left], self.node_shapes[node.right])
         elif isinstance(node.op, ast.MatMult):
             f = getattr(func_table, 'matmul_generic')
             self.node_shapes[node] = f(self.node_shapes[node.left], self.node_shapes[node.right])
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"Binary operator {node.op} not implemented")
 
     def dispatch_call(self, f_name, args):
         if f_name in ['numpy_sum', 'numpy_min', 'numpy_max', 'numpy_argmin', 'numpy_argmax']:
