@@ -101,6 +101,12 @@ def numpy_tan(a):
 def numpy_sinh(a):
     return uop_generic(a)
 
+def numpy_cosh(a):
+    return uop_generic(a)
+
+def numpy_tanh(a):
+    return uop_generic(a)
+
 def numpy_round(a, decimals=()):
     return uop_generic(a)
 
