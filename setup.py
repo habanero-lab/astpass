@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="astpass",                     # Name of the package
-    version="0.1.0",                    # Version
+    version="0.1.1",                    # Version
     author="Tong Zhou",                 # Your name
     author_email="zt9465@gmail.com", # Your email
     description="A collection of AST-based analysis and transformation passes", # Short description
