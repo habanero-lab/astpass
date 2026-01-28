@@ -82,6 +82,11 @@ class PointwiseExprToLoop(ast.NodeTransformer):
         self.loop_index_prefix = loop_index_prefix if loop_index_prefix is not None else "__i"
         self.loop_index_count = 0
 
+    def get_node_shape(self, node):
+        if node not in self.shape_info:
+            raise KeyError(f"Shape info not found for node {type(node)}: {ast.unparse(node)}")
+        return self.shape_info[node]
+
     def get_new_loop_index(self):
         name = f"{self.loop_index_prefix}{self.loop_index_count}"
         self.loop_index_count += 1

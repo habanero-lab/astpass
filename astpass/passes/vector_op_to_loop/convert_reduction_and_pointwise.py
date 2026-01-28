@@ -22,7 +22,7 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
     def gen_initialization(self, reduce_op, var):
         value = None
         if reduce_op == 'sum':
-            value = ast.Constant(0)
+            value = ast.Constant(0.0)
         elif reduce_op == 'max':
             value = str_to_ast_expr("float('-inf')")
         elif reduce_op == 'min':
@@ -70,20 +70,28 @@ class ReductionAndPWExprToLoop(PointwiseExprToLoop):
             ]
         )
 
+    def get_temp_reduction_var(self, reduce_op):
+        return f"__reduce_{reduce_op}_var"
+
     def gen_loop(self, node: ast.Assign, low: int|str, up: int|str):
         loop = super().gen_loop(node, low, up)
         # A convenient attribute for APPy
         loop._simd_okay = True
         if self.is_reduction_call(node.value):
             reduce_op = self.get_reduce_op(node.value)
-            if not isinstance(node.targets[0], ast.Name):
-                raise RuntimeError(f"Only 1D array reduction is supported, but got target: {node.targets[0]}")
-            var = node.targets[0].id
+            if len(self.get_node_shape(node.targets[0])) > 0:
+                raise RuntimeError(f"Only 1D array reduction is supported, but got target: {ast.dump(node.targets[0])}")
+            var = self.get_temp_reduction_var(reduce_op)
             init_stmt = self.gen_initialization(reduce_op, var)
             loop.body = [self.rewrite_reduction_assign(reduce_op, var, node.value)]
+            reassign_stmt = ast.Assign(
+                targets=[node.targets[0]],
+                value=ast.Name(id=var, ctx=ast.Load()),
+                lineno=node.lineno
+            )
             # A convenient attribute for APPy
             loop._reduction = (reduce_op, var)
-            return init_stmt, loop
+            return init_stmt, loop, reassign_stmt
         else:
             return loop
     
