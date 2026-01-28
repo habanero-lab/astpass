@@ -116,9 +116,6 @@ def numpy_exp(a):
 def numpy_sqrt(a):
     return uop_generic(a)
 
-def erf(a):
-    return uop_generic(a)
-
 def numpy_pow(a, b):
     assert len(b) == 0 or len(b) == 1 or len(b) == len(a)
     return a
@@ -156,5 +153,17 @@ def numpy_reduce_generic(a, axis=None):
     else:
         return ()
 
+## Built-in functions
 def pow(a, b):
     return numpy_pow(a, b)
+
+def min(a, b):
+    assert a == () and b == ()
+    return ()
+
+def max(a, b):
+    assert a == () and b == ()
+    return ()
+
+def erf(a):
+    return uop_generic(a)
