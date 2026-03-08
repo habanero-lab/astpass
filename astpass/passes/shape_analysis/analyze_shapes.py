@@ -13,7 +13,9 @@ class AnalyzeExprShapes(ast.NodeVisitor):
 
     def init_rt_var_shapes(self, rt_vals):
         for var, val in rt_vals.items():
-            if isinstance(val, (int, float, bool)):
+            if inspect.ismodule(val):
+                pass  # modules are handled separately in init_module_names
+            elif isinstance(val, (int, float, bool)):
                 self.var_shapes[var] = ()
             elif hasattr(val, 'shape'):
                 self.var_shapes[var] = val.shape
@@ -46,7 +48,7 @@ class AnalyzeExprShapes(ast.NodeVisitor):
     
     def visit_BinOp(self, node):
         self.generic_visit(node)
-        if isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.BitAnd, ast.BitOr, ast.BitXor)):
+        if isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow, ast.BitAnd, ast.BitOr, ast.BitXor)):
             f = getattr(func_table, 'binop_generic')
             self.node_shapes[node] = f(self.node_shapes[node.left], self.node_shapes[node.right])
         elif isinstance(node.op, ast.MatMult):
