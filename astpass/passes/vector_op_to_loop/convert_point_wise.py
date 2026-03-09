@@ -67,7 +67,15 @@ class Scalarize(ast.NodeTransformer):
         if num_slices == 0:
             new_indices = indices + (new_scalar_index,)
         elif num_slices == 1:
-            new_indices = [new_scalar_index if isinstance(idx, ast.Slice) else idx for idx in indices]
+            new_indices = [
+                (ast.BinOp(
+                    left=ast.Name(id=self.idx, ctx=ast.Load()),
+                    op=ast.Add(),
+                    right=idx.lower,
+                ) if idx.lower is not None else ast.Name(id=self.idx, ctx=ast.Load()))
+                if isinstance(idx, ast.Slice) else idx
+                for idx in indices
+            ]
 
         return ast.Subscript(
                 value=node.value,
