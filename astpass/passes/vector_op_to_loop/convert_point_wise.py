@@ -114,7 +114,14 @@ class PointwiseExprToLoop(ast.NodeTransformer):
         elif isinstance(bound, str):
             low, up = bound.split(":")
             assert up != ''
-            low = 0 if low == '' else low
+            if low == '':
+                low = 0
+            else:
+                # Keep loop 0-based so Scalarize can add back idx.lower.
+                # range(0, up-low) with index __i0 means absolute index = __i0 + low,
+                # which Scalarize already emits as (__i0 + idx.lower).
+                up = f'({up}) - ({low})'
+                low = 0
         return low, up
 
     def visit_Assign(self, node):        

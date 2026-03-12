@@ -76,10 +76,13 @@ def subscript(base, indices):
             if not isinstance(size, (int, type(None), str)):
                 raise TypeError("A shape dimension must be int, str, or None")
             
+            dim = base[i]
             table = {
-                int: lambda size: size if size >= 0 else base[i] + size,
-                type(None): lambda size: base[i],
-                str: lambda size: size
+                int: lambda size: size if size >= 0 else dim + size,
+                type(None): lambda size: dim,
+                # String slice shapes like 'i+1:' have an open upper bound;
+                # resolve it against the actual array dimension.
+                str: lambda size: f"{size}{dim}" if size.endswith(':') else size
             }
 
             key = type(size)
