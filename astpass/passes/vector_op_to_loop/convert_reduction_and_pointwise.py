@@ -3,6 +3,66 @@ from .. import shape_analysis
 from ...passes.ast_utils import is_call, str_to_ast_expr
 from .convert_point_wise import PointwiseExprToLoop, Scalarize
 
+_REDUCTION_CALLS = [
+    "np.sum", "np.min", "np.max",
+    "torch.sum", "torch.min", "torch.max",
+    "sum", "min", "max",
+]
+
+def _is_reduction_call(node):
+    return is_call(node, _REDUCTION_CALLS)
+
+
+class ExtractReductionSubexprs(ast.NodeTransformer):
+    """
+    Phase 1 of vector_op_to_loop: extract reduction calls that appear as
+    subexpressions of a compound assignment RHS into separate preceding
+    assignments, so that phase 2 (ReductionAndPWExprToLoop) can handle each
+    standalone reduction assignment individually.
+
+    Example::
+
+        B[i, j] = B[i, j] + np.sum(A[i+1:, i] * B[i+1:, j])
+
+    becomes::
+
+        __extract_reduce_0 = np.sum(A[i+1:, i] * B[i+1:, j])
+        B[i, j] = B[i, j] + __extract_reduce_0
+    """
+
+    def __init__(self):
+        self._counter = 0
+
+    def _fresh_var(self):
+        name = f'__extract_reduce_{self._counter}'
+        self._counter += 1
+        return name
+
+    def visit_Assign(self, node):
+        # If the entire RHS is already a standalone reduction, leave it for phase 2.
+        if _is_reduction_call(node.value):
+            return node
+
+        pre_stmts = []
+
+        class _Replacer(ast.NodeTransformer):
+            def visit_Call(self_, call_node):
+                if _is_reduction_call(call_node):
+                    var_name = self._fresh_var()
+                    pre_stmts.append(ast.Assign(
+                        targets=[ast.Name(id=var_name, ctx=ast.Store())],
+                        value=call_node,
+                        lineno=0,
+                    ))
+                    return ast.Name(id=var_name, ctx=ast.Load())
+                return self_.generic_visit(call_node)
+
+        node.value = _Replacer().visit(node.value)
+        if pre_stmts:
+            return pre_stmts + [node]
+        return node
+
+
 class ReductionAndPWExprToLoop(PointwiseExprToLoop):
     def get_reduce_op(self, call_node: ast.Call):
         func = ast.unparse(call_node.func)
@@ -139,5 +199,6 @@ def transform(tree, runtime_vals, loop_index_prefix=None):
     to be already defined. If the input code inherently requires memory
     allocation for intermediate results, an exception will be raised.
     """
+    tree = ExtractReductionSubexprs().visit(tree)
     shape_info = shape_analysis.analyze(tree, runtime_vals)
     return ReductionAndPWExprToLoop(shape_info, loop_index_prefix).visit(tree)
