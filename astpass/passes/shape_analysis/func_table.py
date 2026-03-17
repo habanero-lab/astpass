@@ -176,3 +176,9 @@ def max(a, b):
 
 def erf(a):
     return uop_generic(a)
+
+def int(a):
+    return uop_generic(a)
+
+def float(a):
+    return uop_generic(a)
