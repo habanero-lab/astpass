@@ -1,1 +1,1 @@
-from .analyze_shapes import analyze
+from .analyze_shapes import analyze, AnalyzeAssignShapes

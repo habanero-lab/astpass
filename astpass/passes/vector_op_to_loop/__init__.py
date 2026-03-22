@@ -1,1 +1,1 @@
-from .convert_reduction_and_pointwise import transform
+from .convert_reduction_and_pointwise import transform, ExtractReductionSubexprs, PointwiseExprToLoop, ReductionAndPWExprToLoop

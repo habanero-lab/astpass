@@ -1,5 +1,6 @@
 import ast
 import inspect
+import builtins
 from . import func_table
 from ..ast_utils import is_call
 
@@ -94,6 +95,8 @@ class AnalyzeExprShapes(ast.NodeVisitor):
 
         if isinstance(node.func, ast.Name):
             f_name = node.func.id
+            if hasattr(builtins, f_name):
+                f_name = f"builtins_{f_name}"
         elif isinstance(node.func, ast.Attribute):
             if not node.func.value.id in self.modules:
                 raise KeyError(f"Module {node.func.value.id} not found in runtime vals")
@@ -135,7 +138,7 @@ class AnalyzeExprShapes(ast.NodeVisitor):
             else:
                 raise RuntimeError("Should not reach here")
         
-        f = getattr(func_table, 'slice')
+        f = getattr(func_table, 'builtins_slice')
         self.node_shapes[node] = f(*args)
 
 class AnalyzeAssignShapes(AnalyzeExprShapes):

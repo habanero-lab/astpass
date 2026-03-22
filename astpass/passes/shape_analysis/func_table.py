@@ -26,7 +26,7 @@ def matmul_generic(left, right):
         raise RuntimeError(f"Mismatched contracting dimension found for matmul: {left[-1]} and {right[0]}")
     return left[:-1] + right[1:]
 
-def range(*args):
+def builtins_range(*args):
     '''
     The shape of range cannot be determined by the shape of its arguments.
     So simply return a None here, need another pass to pass the values of 
@@ -34,7 +34,7 @@ def range(*args):
     '''
     return None 
 
-def slice(low, up, step):
+def builtins_slice(low, up, step):
     # ---- Validate inputs ----
     for name, arg in [("low", low), ("up", up), ("step", step)]:
         if not isinstance(arg, (int, type(None), str)):
@@ -163,22 +163,22 @@ def numpy_reduce_generic(a, axis=None):
         return ()
 
 ## Built-in functions
-def pow(a, b):
+def builtins_pow(a, b):
     return numpy_pow(a, b)
 
-def min(a, b):
+def builtins_min(a, b):
     assert a == () and b == ()
     return ()
 
-def max(a, b):
+def builtins_max(a, b):
     assert a == () and b == ()
     return ()
 
 def erf(a):
     return uop_generic(a)
 
-def int(a):
+def builtins_int(a):
     return uop_generic(a)
 
-def float(a):
+def builtins_float(a):
     return uop_generic(a)
